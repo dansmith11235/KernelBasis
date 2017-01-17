@@ -3,7 +3,7 @@ from numpy import random
 from numpy import ndarray
 import pylab as pl
 
-#Part 1 
+#dataset 1 
 
 '''DataClass = np.loadtxt('data_3class.csv')
 
@@ -22,7 +22,7 @@ numInput = xTrain.shape[1]'''
 
 
 
-#Part 4
+#dataset  2
 '''
 name = '1' #make sure it is str(n), n from 1 to 4.
 # load data from csv files
@@ -47,7 +47,7 @@ numClass = 2
 numInput = xTrain.shape[1]
 
 '''
-#part 5
+#dataset 3 
 
 train = np.loadtxt('mnist_digit_'+str(0)+'.csv')
 xTrain = train[:200, :]
@@ -133,7 +133,9 @@ def devReLu(X):
             diag[i] = 1
     return(diag)
 
-
+# Layers is an integer
+# NumNodes is an array with how many nodes are in each layer
+# The number of elements in NumNodes must equalt the number of layers
 def IntalizeWeights(Layers, NumNodes):
 
     weights = []
@@ -151,9 +153,6 @@ def IntalizeWeights(Layers, NumNodes):
         weights.append(w)
 
     return weights, b
-
-
-#Weight, b = IntalizeWeights(3,np.array([2,3,1]))
 
 
 # X is the input data 
@@ -184,7 +183,7 @@ def feedForwardNN(X, W, b,Layers,NumNodes):
 # Takes a matrix X
 # Y is a one hot matrix
 # Layer is the number of layers including input and output
-# Num nodes is the number of nodes for each layer
+# NumNodes is the number of nodes for each layer
 # first element must be number of inputs
 # last element must be number of outputs
 # SGD rate is the learning rate
@@ -194,8 +193,6 @@ def backProp(X,Y,Layers,NumNodes,SGDRate, max_epochs):
 
     W, b = IntalizeWeights(Layers,NumNodes)
 
-    #W = [np.matrix([[.3, -.4, .5],[1,.6,-.7]]),np.matrix([[.2, .5, -.8],[.5,-1,.3],[-.2,1,.6]])]
-    #b = [np.matrix([-.3,.5,.2]),np.matrix([.1,.6,.4])]
     epoch = 1
 
     while epoch < max_epochs:
@@ -206,9 +203,6 @@ def backProp(X,Y,Layers,NumNodes,SGDRate, max_epochs):
         a = X[rand,]
         y = Y[rand,]
 
-        #a = X[1,]
-        #y = Y[1,]
-        #set list of omegas to an empty list
         # omegas follow syntax of algorithm in course notes
         delta = []        
         
@@ -223,19 +217,16 @@ def backProp(X,Y,Layers,NumNodes,SGDRate, max_epochs):
             a = np.reshape(reLu(z),(1,NumNodes[i+1]))
             aList.append(a)
 
-    
 
         #Get the output error  and save it as one of the omegas
-        Fdiag = np.ndarray.flatten(np.transpose(devSoftMax(zList[-1])))
-
-        Fdiag = np.squeeze(np.asarray(Fdiag))
-
         delta.append(softMax(zList[-1]) - np.reshape(y,(numClass,1)))
+
 
         # work backwards through the neural net to get the omegas at each level    
         for i in range(1,Layers - 1):
 
             DiagF = np.diag(devReLu(zList[-i-1]))
+
             delta.append(np.dot(np.dot(DiagF,W[-i]),delta[-1]))
 
         #Count is used to index the omegas
@@ -335,24 +326,22 @@ weights, bias = backProp(xTrain,yTrainOneHot,Layers = layers, NumNodes= numnodes
 
 Results = np.zeros((xVal.shape[0],numClass))
 Trains = np.zeros((xTrain.shape[0],numClass))
-Test = np.zeros((xTest.shape[0],numClass))
 
 for i in range(xVal.shape[0]):
     Results[i,] = np.transpose(feedForwardNN(xVal[i,],weights,bias,Layers = layers,NumNodes = numnodes))
 for i in range(xTrain.shape[0]):
     Trains[i,] = np.transpose(feedForwardNN(xTrain[i,],weights,bias,Layers = layers,NumNodes = numnodes))
-for i in range(xTest.shape[0]):
-    Test[i,] = np.transpose(feedForwardNN(xTest[i,],weights,bias,Layers = layers,NumNodes = numnodes))
+
 yValOneHot = oneHot(yVal,numClass)
 yTrainOneHot = oneHot(yTrain,numClass)
-yTestOneHot = oneHot(yTest,numClass)
+
 
 # print (xVal.shape)
 print('Training Correct:' + str(errorRate(Trains,yTrainOneHot)))
 print('Validation Correct:' + str(errorRate(Results,yValOneHot)))
-print('Testing Correct:' + str(errorRate(Test,yTestOneHot)))
 
-#Uncomment for plots for part 4
+
+#Uncomment for plots for dataset 2
 
 '''plotDecisionBoundary(xTrain,yTrain,weights,bias,[0],Layers = layers,NumNodes = numnodes)
 
